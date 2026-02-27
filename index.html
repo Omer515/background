@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>القتال في الصحراء</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --gold: #f0a500;
+      --gold-dark: #c47d00;
+      --orange: #ff6b1a;
+      --red: #c0392b;
+      --sand: #e8c887;
+      --sand-dark: #b8945a;
+      --dark: #0a0806;
+      --dark2: #1a1208;
+      --dark3: #2a1e0e;
+      --text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Cairo', sans-serif;
+      background: var(--dark);
+    }
+
+    /* ===== BACKGROUND LAYERS ===== */
+    #app {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Sky gradient */
+    .bg-sky {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        #0d0a04 0%,
+        #1a1006 15%,
+        #2e1a08 30%,
+        #4a2a0a 45%,
+        #7a3d10 58%,
+        #c45a0a 70%,
+        #e87820 80%,
+        #f0a030 88%,
+        #d4880a 94%,
+        #8b4a04 100%
+      );
+      z-index: 0;
+    }
+
+    /* Sun glow */
+    .bg-sun {
+      position: absolute;
+      bottom: 32%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, #fff8e0 0%, #ffe066 30%, #ffaa00 60%, transparent 100%);
+      border-radius: 50%;
+      filter: blur(8px);
+      opacity: 0.6;
+      z-index: 1;
+      animation: sunPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes sunPulse {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      50%       { opacity: 0.9; transform: translateX(-50%) scale(1.12); }
+    }
+
+    /* Heat haze lines */
+    .bg-haze {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .haze-line {
+      position: absolute;
+      width: 200%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 10%, rgba(255,200,80,0.15) 50%, transparent 90%);
+      animation: hazeMove 6s linear infinite;
+    }
+
+    .haze-line:nth-child(1) { top: 62%; animation-delay: 0s; }
+    .haze-line:nth-child(2) { top: 65%; animation-delay: 1s; opacity: 0.7; }
+    .haze-line:nth-child(3) { top: 68%; animation-delay: 2.5s; opacity: 0.5; }
+    .haze-line:nth-child(4) { top: 71%; animation-delay: 4s; opacity: 0.6; }
+    .haze-line:nth-child(5) { top: 74%; animation-delay: 0.8s; opacity: 0.4; }
+
+    @keyframes hazeMove {
+      0%   { transform: translateX(-50%); }
+      100% { transform: translateX(0%); }
+    }
+
+    /* Desert dunes SVG */
+    .bg-dunes {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 3;
+    }
+
+    /* Dust/sand particles */
+    .particles {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(220,170,80,0.4);
+      animation: floatUp linear infinite;
+    }
+
+    @keyframes floatUp {
+      0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+      50%  { transform: translateY(-40vh) translateX(20px) scale(0.7); opacity: 0.3; }
+      100% { transform: translateY(-80vh) translateX(-10px) scale(0.3); opacity: 0; }
+    }
+
+    /* Vignette overlay */
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
+      z-index: 5;
+    }
+
+    /* ===== CONTENT ===== */
+    .content {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px 30px;
+    }
+
+    /* ===== HEADER / LOGO ===== */
+    .header {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: clamp(30px, 8vh, 70px);
+    }
+
+    .logo-badge {
+      width: clamp(70px, 18vw, 110px);
+      height: clamp(70px, 18vw, 110px);
+      background: linear-gradient(135deg, #2a1a06 0%, #1a0e03 100%);
+      border: 3px solid var(--gold);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 0 30px rgba(240,165,0,0.5),
+        0 0 60px rgba(240,165,0,0.2),
+        inset 0 1px 0 rgba(255,255,200,0.15);
+      margin-bottom: 12px;
+      animation: logoBreathe 3s ease-in-out infinite;
+      position: relative;
+    }
+
+    .logo-badge::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 23px;
+      border: 1px solid rgba(240,165,0,0.3);
+      animation: logoPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes logoBreathe {
+      0%, 100% { box-shadow: 0 0 30px rgba(240,165,0,0.5), 0 0 60px rgba(240,165,0,0.2), inset 0 1px 0 rgba(255,255,200,0.15); }
+      50%       { box-shadow: 0 0 50px rgba(240,165,0,0.8), 0 0 100px rgba(240,165,0,0.4), inset 0 1px 0 rgba(255,255,200,0.15); }
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50%       { opacity: 0.7; transform: scale(1.05); }
+    }
+
+    .logo-icon {
+      font-size: clamp(36px, 9vw, 58px);
+      filter: drop-shadow(0 0 10px rgba(240,165,0,0.8));
+    }
+
+    .game-title {
+      font-size: clamp(26px, 7.5vw, 48px);
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow:
+        0 0 20px rgba(240,165,0,0.8),
+        0 0 40px rgba(240,165,0,0.4),
+        var(--text-shadow);
+      letter-spacing: 2px;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .game-subtitle {
+      font-size: clamp(11px, 3vw, 16px);
+      font-weight: 600;
+      color: var(--sand);
+      text-shadow: var(--text-shadow);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      opacity: 0.85;
+    }
+
+    /* Season badge */
+    .season-badge {
+      margin-top: 10px;
+      background: linear-gradient(90deg, transparent, rgba(192,57,43,0.6), transparent);
+      border-top: 1px solid rgba(192,57,43,0.5);
+      border-bottom: 1px solid rgba(192,57,43,0.5);
+      padding: 3px 20px;
+      font-size: clamp(9px, 2.5vw, 12px);
+      font-weight: 700;
+      color: #ff8a7a;
+      letter-spacing: 3px;
+    }
+
+    /* ===== CENTER AREA ===== */
+    .center-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* Play button - main CTA */
+    .btn-play {
+      width: clamp(220px, 75%, 320px);
+      height: clamp(58px, 14vw, 72px);
+      background: linear-gradient(180deg, #ff8c00 0%, #e05500 50%, #b03500 100%);
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 6px 0 #7a2000,
+        0 8px 20px rgba(200,80,0,0.6),
+        0 0 40px rgba(255,140,0,0.3);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .btn-play::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 50%);
+      border-radius: 16px;
+    }
+
+    .btn-play:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #7a2000, 0 4px 10px rgba(200,80,0,0.4);
+    }
+
+    .btn-play .btn-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: clamp(18px, 5vw, 26px);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+
+    .btn-play .btn-icon { font-size: 1.4em; }
+
+    /* Shimmer animation on play button */
+    .btn-play::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { left: -100%; }
+      60%  { left: 150%; }
+      100% { left: 150%; }
+    }
+
+    /* Grid of secondary buttons */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: clamp(220px, 75%, 320px);
+      margin-top: 6px;
+    }
+
+    .btn-secondary {
+      height: clamp(56px, 13vw, 68px);
+      background: linear-gradient(180deg, #1e1408 0%, #120e06 100%);
+      border: 1.5px solid rgba(240,165,0,0.35);
+      border-radius: 14px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      box-shadow:
+        0 4px 0 #0a0804,
+        0 6px 16px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(240,165,0,0.08);
+      transition: transform 0.1s, box-shadow 0.1s, border-color 0.2s;
+    }
+
+    .btn-secondary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%);
+      border-radius: 14px;
+    }
+
+    .btn-secondary:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #0a0804, 0 3px 8px rgba(0,0,0,0.4);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(240,165,0,0.6);
+    }
+
+    /* Store button - accent color */
+    .btn-store {
+      border-color: rgba(255,140,0,0.45);
+    }
+    .btn-store .btn-s-icon { filter: drop-shadow(0 0 6px rgba(255,140,0,0.8)); }
+
+    /* Profile button */
+    .btn-profile {
+      border-color: rgba(100,180,255,0.35);
+    }
+    .btn-profile .btn-s-icon { filter: drop-shadow(0 0 6px rgba(100,180,255,0.7)); }
+
+    /* Settings button */
+    .btn-settings {
+      border-color: rgba(150,200,100,0.35);
+    }
+    .btn-settings .btn-s-icon { filter: drop-shadow(0 0 6px rgba(150,200,100,0.7)); }
+
+    .btn-s-icon {
+      font-size: clamp(22px, 6vw, 30px);
+    }
+
+    .btn-s-label {
+      font-size: clamp(11px, 3vw, 14px);
+      font-weight: 700;
+      color: var(--sand);
+      text-shadow: var(--text-shadow);
+      letter-spacing: 1px;
+    }
+
+    /* Notification dot */
+    .notif-dot {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      width: 10px;
+      height: 10px;
+      background: #ff3b30;
+      border-radius: 50%;
+      border: 2px solid #120e06;
+      box-shadow: 0 0 8px rgba(255,60,48,0.8);
+      animation: notifPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes notifPulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.3); }
+    }
+
+    /* ===== BOTTOM BAR ===== */
+    .bottom-bar {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Player info strip */
+    .player-strip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(10,8,4,0.7);
+      border: 1px solid rgba(240,165,0,0.2);
+      border-radius: 50px;
+      padding: 6px 14px;
+      backdrop-filter: blur(6px);
+    }
+
+    .player-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #4a2a0a, #2a1208);
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .player-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .player-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .player-rank {
+      font-size: 10px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .player-divider {
+      width: 1px;
+      height: 28px;
+      background: rgba(240,165,0,0.2);
+    }
+
+    .player-currency {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    /* Connecting dots indicator */
+    .version-tag {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+
+    /* ===== EDGE DECORATIONS ===== */
+    .edge-decor {
+      position: absolute;
+      z-index: 9;
+      pointer-events: none;
+    }
+
+    .corner-tl {
+      top: 0; left: 0;
+      width: 60px; height: 60px;
+      border-top: 2px solid rgba(240,165,0,0.4);
+      border-left: 2px solid rgba(240,165,0,0.4);
+      border-radius: 0 0 12px 0;
+    }
+
+    .corner-tr {
+      top: 0; right: 0;
+      width: 60px; height: 60px;
+      border-top: 2px solid rgba(240,165,0,0.4);
+      border-right: 2px solid rgba(240,165,0,0.4);
+      border-radius: 0 0 0 12px;
+    }
+
+    .corner-bl {
+      bottom: 0; left: 0;
+      width: 60px; height: 60px;
+      border-bottom: 2px solid rgba(240,165,0,0.4);
+      border-left: 2px solid rgba(240,165,0,0.4);
+      border-radius: 0 12px 0 0;
+    }
+
+    .corner-br {
+      bottom: 0; right: 0;
+      width: 60px; height: 60px;
+      border-bottom: 2px solid rgba(240,165,0,0.4);
+      border-right: 2px solid rgba(240,165,0,0.4);
+      border-radius: 12px 0 0 0;
+    }
+
+    /* Animated scanline effect (subtle) */
+    .scanline {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.04) 3px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Background layers -->
+  <div class="bg-sky"></div>
+  <div class="bg-sun"></div>
+
+  <div class="bg-haze">
+    <div class="haze-line"></div>
+    <div class="haze-line"></div>
+    <div class="haze-line"></div>
+    <div class="haze-line"></div>
+    <div class="haze-line"></div>
+  </div>
+
+  <!-- Desert dunes SVG -->
+  <svg class="bg-dunes" viewBox="0 0 400 180" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <!-- Far dune shadow -->
+    <ellipse cx="200" cy="170" rx="240" ry="40" fill="rgba(0,0,0,0.4)"/>
+    <!-- Back dunes -->
+    <path d="M-20 180 Q40 110 120 130 Q180 110 240 120 Q300 105 360 125 Q400 115 430 130 L430 180 Z"
+          fill="#3d2208" opacity="0.9"/>
+    <!-- Mid dunes -->
+    <path d="M-20 180 Q20 145 80 155 Q130 140 190 148 Q250 138 310 150 Q360 140 430 155 L430 180 Z"
+          fill="#5a3010"/>
+    <!-- Front dunes -->
+    <path d="M-20 180 Q30 158 100 165 Q160 155 220 162 Q280 153 340 162 Q390 155 430 165 L430 180 Z"
+          fill="#7a4518"/>
+    <!-- Foreground sand -->
+    <path d="M-20 180 Q60 168 150 173 Q230 165 320 172 Q380 167 430 172 L430 180 Z"
+          fill="#9a5a22"/>
+    <!-- Sand ripples -->
+    <path d="M10 177 Q50 174 90 176" stroke="rgba(220,160,60,0.3)" stroke-width="1" fill="none"/>
+    <path d="M120 175 Q170 172 220 174" stroke="rgba(220,160,60,0.3)" stroke-width="1" fill="none"/>
+    <path d="M250 176 Q300 173 350 175" stroke="rgba(220,160,60,0.3)" stroke-width="1" fill="none"/>
+  </svg>
+
+  <!-- Dust particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Vignette -->
+  <div class="vignette"></div>
+
+  <!-- Scanlines -->
+  <div class="scanline"></div>
+
+  <!-- Corner decorations -->
+  <div class="edge-decor corner-tl"></div>
+  <div class="edge-decor corner-tr"></div>
+  <div class="edge-decor corner-bl"></div>
+  <div class="edge-decor corner-br"></div>
+
+  <!-- Main content -->
+  <div class="content">
+
+    <!-- Header / Logo -->
+    <div class="header">
+      <div class="logo-badge">
+        <span class="logo-icon">⚔️</span>
+      </div>
+      <div class="game-title">القتال في الصحراء</div>
+      <div class="game-subtitle">Desert Warriors</div>
+      <div class="season-badge">◆ الموسم الثالث ◆</div>
+    </div>
+
+    <!-- Center: main buttons -->
+    <div class="center-area">
+
+      <!-- Play button -->
+      <button class="btn-play" onclick="ripple(this, event)">
+        <div class="btn-content">
+          <span class="btn-icon">▶</span>
+          ابدأ اللعبة
+        </div>
+      </button>
+
+      <!-- 2×2 grid -->
+      <div class="btn-grid">
+
+        <button class="btn-secondary btn-store" onclick="ripple(this, event)">
+          <div class="notif-dot"></div>
+          <span class="btn-s-icon">🏪</span>
+          <span class="btn-s-label">المتجر</span>
+        </button>
+
+        <button class="btn-secondary btn-profile" onclick="ripple(this, event)">
+          <span class="btn-s-icon">👤</span>
+          <span class="btn-s-label">الملف الشخصي</span>
+        </button>
+
+        <button class="btn-secondary btn-settings" onclick="ripple(this, event)" style="grid-column: 1 / -1; width: 100%;">
+          <span class="btn-s-icon">⚙️</span>
+          <span class="btn-s-label">الإعدادات</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Bottom player info -->
+    <div class="bottom-bar">
+      <div class="player-strip">
+        <div class="player-avatar">🪖</div>
+        <div class="player-info">
+          <span class="player-name">المحارب الأسود</span>
+          <span class="player-rank">★ المستوى ٤٧</span>
+        </div>
+        <div class="player-divider"></div>
+        <div class="player-currency">
+          💰 <span>12,840</span>
+        </div>
+      </div>
+      <div class="version-tag">v2.3.1 · جميع الحقوق محفوظة</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Generate dust particles
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 1;
+    p.style.cssText = `
+      width: ${size}px;
+      height: ${size}px;
+      left: ${Math.random() * 100}%;
+      bottom: ${Math.random() * 35}%;
+      animation-duration: ${Math.random() * 8 + 6}s;
+      animation-delay: ${Math.random() * 8}s;
+      opacity: ${Math.random() * 0.5 + 0.1};
+    `;
+    container.appendChild(p);
+  }
+
+  // Ripple effect on button tap
+  function ripple(btn, e) {
+    const existing = btn.querySelector('.ripple-el');
+    if (existing) existing.remove();
+
+    const rect = btn.getBoundingClientRect();
+    const x = (e.clientX || rect.left + rect.width / 2) - rect.left;
+    const y = (e.clientY || rect.top + rect.height / 2) - rect.top;
+
+    const el = document.createElement('span');
+    el.className = 'ripple-el';
+    el.style.cssText = `
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      width: 8px; height: 8px;
+      left: ${x - 4}px; top: ${y - 4}px;
+      transform: scale(0);
+      animation: rippleAnim 0.5s ease-out forwards;
+      pointer-events: none;
+    `;
+    btn.appendChild(el);
+
+    if (!document.querySelector('#ripple-style')) {
+      const s = document.createElement('style');
+      s.id = 'ripple-style';
+      s.textContent = `@keyframes rippleAnim { to { transform: scale(30); opacity: 0; } }`;
+      document.head.appendChild(s);
+    }
+  }
+</script>
+</body>
+</html>
