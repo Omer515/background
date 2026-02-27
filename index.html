@@ -1,718 +1,926 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>القتال في الصحراء</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,orientation=landscape"/>
+<title>Desert Storm</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 
-    :root {
-      --gold: #f0a500;
-      --gold-dark: #c47d00;
-      --orange: #ff6b1a;
-      --red: #c0392b;
-      --sand: #e8c887;
-      --sand-dark: #b8945a;
-      --dark: #0a0806;
-      --dark2: #1a1208;
-      --dark3: #2a1e0e;
-      --text-shadow: 0 2px 8px rgba(0,0,0,0.9);
-    }
+html,body{
+  width:100%;height:100%;
+  overflow:hidden;
+  background:#020308;
+  font-family:'Cairo',sans-serif;
+}
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Cairo', sans-serif;
-      background: var(--dark);
-    }
+/* Force landscape */
+@media(orientation:portrait){
+  body{transform:rotate(90deg);transform-origin:50% 50%;width:100vh;height:100vw;position:fixed;top:calc(50vw - 50vh);left:calc(50vh - 50vw);}
+}
 
-    /* ===== BACKGROUND LAYERS ===== */
-    #app {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      overflow: hidden;
-    }
+canvas#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
 
-    /* Sky gradient */
-    .bg-sky {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        180deg,
-        #0d0a04 0%,
-        #1a1006 15%,
-        #2e1a08 30%,
-        #4a2a0a 45%,
-        #7a3d10 58%,
-        #c45a0a 70%,
-        #e87820 80%,
-        #f0a030 88%,
-        #d4880a 94%,
-        #8b4a04 100%
-      );
-      z-index: 0;
-    }
+/* ─── OVERLAYS ─── */
+.ov-top{position:fixed;top:0;left:0;right:0;height:30%;background:linear-gradient(180deg,rgba(2,3,8,0.9) 0%,transparent 100%);z-index:1;pointer-events:none}
+.ov-bot{position:fixed;bottom:0;left:0;right:0;height:35%;background:linear-gradient(0deg,rgba(2,3,8,0.95) 0%,transparent 100%);z-index:1;pointer-events:none}
+.ov-left{position:fixed;top:0;left:0;bottom:0;width:55%;background:linear-gradient(90deg,rgba(2,3,8,0.88) 0%,rgba(2,3,8,0.5) 60%,transparent 100%);z-index:1;pointer-events:none}
+.ov-vign{position:fixed;inset:0;background:radial-gradient(ellipse 100% 100% at 62% 40%,transparent 25%,rgba(2,3,8,0.7) 100%);z-index:1;pointer-events:none}
+.scanline{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px)}
 
-    /* Sun glow */
-    .bg-sun {
-      position: absolute;
-      bottom: 32%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 120px;
-      background: radial-gradient(circle, #fff8e0 0%, #ffe066 30%, #ffaa00 60%, transparent 100%);
-      border-radius: 50%;
-      filter: blur(8px);
-      opacity: 0.6;
-      z-index: 1;
-      animation: sunPulse 4s ease-in-out infinite;
-    }
+/* ─── CHARACTER ZONE ─── */
+.char-zone{
+  position:fixed;
+  right:-2%;bottom:0;
+  width:52%;height:100%;
+  z-index:3;pointer-events:none;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.char-glow{
+  position:fixed;
+  right:8%;bottom:0;
+  width:36%;height:50%;
+  background:radial-gradient(ellipse 100% 60% at 50% 100%,rgba(255,100,0,0.22) 0%,transparent 70%);
+  z-index:2;pointer-events:none;
+  animation:glowBreath 4s ease-in-out infinite;
+}
+.char-glow2{
+  position:fixed;
+  right:12%;bottom:0;
+  width:28%;height:70%;
+  background:radial-gradient(ellipse 60% 80% at 50% 80%,rgba(255,160,30,0.1) 0%,transparent 70%);
+  z-index:2;pointer-events:none;
+}
+@keyframes glowBreath{0%,100%{opacity:.7}50%{opacity:1}}
 
-    @keyframes sunPulse {
-      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-      50%       { opacity: 0.9; transform: translateX(-50%) scale(1.12); }
-    }
+.char-svg{
+  width:100%;height:95%;
+  filter:drop-shadow(0 0 50px rgba(255,90,0,0.35)) drop-shadow(0 0 100px rgba(255,40,0,0.15));
+  animation:charFloat 6s ease-in-out infinite;
+}
+@keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
-    /* Heat haze lines */
-    .bg-haze {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      overflow: hidden;
-    }
+/* ─── LENS FLARE ─── */
+.flare{
+  position:fixed;z-index:4;pointer-events:none;
+  border-radius:50%;
+  animation:flarePulse 5s ease-in-out infinite;
+}
+.flare1{width:3px;height:3px;background:#fff;box-shadow:0 0 6px 3px rgba(255,220,100,0.8),0 0 20px 8px rgba(255,160,0,0.4);right:38%;top:28%;animation-delay:0s}
+.flare2{width:2px;height:2px;background:#fff;box-shadow:0 0 4px 2px rgba(255,200,100,0.6),0 0 14px 5px rgba(255,140,0,0.3);right:42%;top:32%;animation-delay:1s}
+.flare3{width:1px;height:1px;background:rgba(255,220,150,0.8);box-shadow:0 0 6px 4px rgba(255,180,80,0.3);right:36%;top:24%;animation-delay:2s}
+@keyframes flarePulse{0%,100%{opacity:.6}50%{opacity:1}}
 
-    .haze-line {
-      position: absolute;
-      width: 200%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent 10%, rgba(255,200,80,0.15) 50%, transparent 90%);
-      animation: hazeMove 6s linear infinite;
-    }
+/* ─── HUD CORNERS ─── */
+.hud{position:fixed;inset:0;z-index:10;pointer-events:none}
+.hud::before,.hud::after,.hud2::before,.hud2::after{content:'';position:fixed;width:50px;height:50px}
+.hud::before{top:8px;left:8px;border-top:1.5px solid rgba(255,160,0,0.55);border-left:1.5px solid rgba(255,160,0,0.55)}
+.hud::after{top:8px;right:8px;border-top:1.5px solid rgba(255,160,0,0.55);border-right:1.5px solid rgba(255,160,0,0.55)}
+.hud2{position:fixed;inset:0;z-index:10;pointer-events:none}
+.hud2::before{bottom:8px;left:8px;border-bottom:1.5px solid rgba(255,160,0,0.55);border-left:1.5px solid rgba(255,160,0,0.55)}
+.hud2::after{bottom:8px;right:8px;border-bottom:1.5px solid rgba(255,160,0,0.55);border-right:1.5px solid rgba(255,160,0,0.55)}
 
-    .haze-line:nth-child(1) { top: 62%; animation-delay: 0s; }
-    .haze-line:nth-child(2) { top: 65%; animation-delay: 1s; opacity: 0.7; }
-    .haze-line:nth-child(3) { top: 68%; animation-delay: 2.5s; opacity: 0.5; }
-    .haze-line:nth-child(4) { top: 71%; animation-delay: 4s; opacity: 0.6; }
-    .haze-line:nth-child(5) { top: 74%; animation-delay: 0.8s; opacity: 0.4; }
+/* ─── TOP BAR ─── */
+.top-bar{
+  position:fixed;top:0;left:0;right:0;
+  height:clamp(44px,8vh,56px);
+  z-index:20;
+  display:flex;align-items:center;
+  padding:0 clamp(14px,3vw,24px);
+  gap:clamp(10px,2vw,20px);
+}
+.logo-mark{
+  display:flex;align-items:center;gap:8px;
+  margin-left:auto;
+}
+.logo-icon-wrap{
+  width:clamp(28px,4vw,36px);height:clamp(28px,4vw,36px);
+  background:linear-gradient(135deg,#ff6000,#cc2000);
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(14px,2vw,18px);
+  box-shadow:0 0 14px rgba(255,80,0,0.5);
+}
+.logo-text{
+  font-size:clamp(13px,2vw,17px);
+  font-weight:900;color:#fff;
+  letter-spacing:2px;
+  text-shadow:0 0 20px rgba(255,120,0,0.6);
+}
 
-    @keyframes hazeMove {
-      0%   { transform: translateX(-50%); }
-      100% { transform: translateX(0%); }
-    }
+.tb-divider{width:1px;height:22px;background:rgba(255,255,255,0.1)}
 
-    /* Desert dunes SVG */
-    .bg-dunes {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      z-index: 3;
-    }
+.player-pill{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:4px 10px 4px 6px;
+}
+.pa{
+  width:clamp(22px,3.5vw,28px);height:clamp(22px,3.5vw,28px);
+  background:linear-gradient(135deg,#2a1a06,#0e0804);
+  border:1.5px solid rgba(255,140,0,0.5);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(10px,1.6vw,13px);
+}
+.pname{font-size:clamp(10px,1.6vw,13px);font-weight:700;color:#fff}
+.plvl{
+  font-size:clamp(8px,1.3vw,10px);font-weight:700;
+  background:linear-gradient(90deg,#ff8c00,#ffcc00);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
 
-    /* Dust/sand particles */
-    .particles {
-      position: absolute;
-      inset: 0;
-      z-index: 4;
-      pointer-events: none;
-    }
+.currency-strip{display:flex;align-items:center;gap:clamp(8px,1.5vw,14px)}
+.cur{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  padding:3px 10px 3px 8px;
+  font-size:clamp(10px,1.6vw,13px);
+  font-weight:700;
+}
+.cur.gold{color:#ffd700;border-color:rgba(255,215,0,0.2)}
+.cur.gems{color:#c084fc;border-color:rgba(192,132,252,0.2)}
+.cur.cash{color:#6ee7b7;border-color:rgba(110,231,183,0.2)}
+.cur-icon{font-size:1.1em}
+.cur-add{
+  width:clamp(16px,2.5vw,20px);height:clamp(16px,2.5vw,20px);
+  background:rgba(255,255,255,0.1);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(9px,1.3vw,11px);color:rgba(255,255,255,0.5);
+  cursor:pointer;
+}
 
-    .particle {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(220,170,80,0.4);
-      animation: floatUp linear infinite;
-    }
+.top-settings{
+  width:clamp(28px,4vw,36px);height:clamp(28px,4vw,36px);
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(13px,2vw,17px);cursor:pointer;
+  transition:background .2s;
+}
+.top-settings:active{background:rgba(255,255,255,0.14)}
 
-    @keyframes floatUp {
-      0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
-      50%  { transform: translateY(-40vh) translateX(20px) scale(0.7); opacity: 0.3; }
-      100% { transform: translateY(-80vh) translateX(-10px) scale(0.3); opacity: 0; }
-    }
+/* ─── LEFT PANEL ─── */
+.left-panel{
+  position:fixed;
+  top:0;left:0;bottom:0;
+  width:50%;
+  z-index:15;
+  display:flex;flex-direction:column;
+  justify-content:center;
+  padding:clamp(50px,10vh,80px) 0 clamp(80px,14vh,110px) clamp(18px,4vw,40px);
+  gap:clamp(8px,1.5vh,16px);
+}
 
-    /* Vignette overlay */
-    .vignette {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
-      z-index: 5;
-    }
+.eyebrow{
+  display:flex;align-items:center;gap:8px;
+  font-size:clamp(8px,1.4vw,11px);
+  font-weight:700;
+  color:rgba(255,170,60,0.8);
+  letter-spacing:4px;
+  text-transform:uppercase;
+}
+.eyebrow-line{flex:1;max-width:40px;height:1px;background:rgba(255,150,0,0.4)}
 
-    /* ===== CONTENT ===== */
-    .content {
-      position: relative;
-      z-index: 10;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px 30px;
-    }
+.title-en{
+  font-size:clamp(10px,1.8vw,14px);
+  font-weight:700;
+  color:rgba(255,200,100,0.5);
+  letter-spacing:8px;
+  text-transform:uppercase;
+}
 
-    /* ===== HEADER / LOGO ===== */
-    .header {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: clamp(30px, 8vh, 70px);
-    }
+.title-ar{
+  font-size:clamp(28px,6.5vw,58px);
+  font-weight:900;
+  line-height:0.9;
+  letter-spacing:-1px;
+  background:linear-gradient(175deg,#ffffff 0%,#ffe4a0 35%,#ff8c00 65%,#cc2200 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 30px rgba(255,120,0,0.5));
+  position:relative;
+}
+.title-ar::after{
+  content:attr(data-t);
+  position:absolute;inset:0;
+  background:inherit;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0;
+  animation:glitch 10s infinite;
+}
+@keyframes glitch{
+  0%,94%,100%{opacity:0;transform:none}
+  95%{opacity:0.7;transform:translateX(-3px)}
+  96%{opacity:0;transform:none}
+  97%{opacity:0.5;transform:translateX(3px)}
+  98%{opacity:0;transform:none}
+}
 
-    .logo-badge {
-      width: clamp(70px, 18vw, 110px);
-      height: clamp(70px, 18vw, 110px);
-      background: linear-gradient(135deg, #2a1a06 0%, #1a0e03 100%);
-      border: 3px solid var(--gold);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow:
-        0 0 30px rgba(240,165,0,0.5),
-        0 0 60px rgba(240,165,0,0.2),
-        inset 0 1px 0 rgba(255,255,200,0.15);
-      margin-bottom: 12px;
-      animation: logoBreathe 3s ease-in-out infinite;
-      position: relative;
-    }
+.title-sep{
+  width:clamp(60px,12vw,120px);height:2px;
+  background:linear-gradient(90deg,#ff8c00,#ffcc00,rgba(255,140,0,0.2));
+  position:relative;overflow:hidden;
+}
+.title-sep::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.9),transparent);
+  animation:sepSweep 3s ease-in-out infinite;
+}
+@keyframes sepSweep{0%{transform:translateX(-100%)}60%,100%{transform:translateX(300%)}}
 
-    .logo-badge::after {
-      content: '';
-      position: absolute;
-      inset: -3px;
-      border-radius: 23px;
-      border: 1px solid rgba(240,165,0,0.3);
-      animation: logoPulse 2s ease-in-out infinite;
-    }
+.tagline{
+  font-size:clamp(9px,1.5vw,12px);
+  font-weight:600;
+  color:rgba(200,180,140,0.65);
+  letter-spacing:2px;
+  max-width:clamp(180px,35vw,280px);
+  line-height:1.6;
+}
 
-    @keyframes logoBreathe {
-      0%, 100% { box-shadow: 0 0 30px rgba(240,165,0,0.5), 0 0 60px rgba(240,165,0,0.2), inset 0 1px 0 rgba(255,255,200,0.15); }
-      50%       { box-shadow: 0 0 50px rgba(240,165,0,0.8), 0 0 100px rgba(240,165,0,0.4), inset 0 1px 0 rgba(255,255,200,0.15); }
-    }
+/* PLAY button */
+.btn-play-wrap{margin-top:clamp(4px,1vh,10px)}
 
-    @keyframes logoPulse {
-      0%, 100% { opacity: 0.3; transform: scale(1); }
-      50%       { opacity: 0.7; transform: scale(1.05); }
-    }
+.btn-play{
+  position:relative;
+  height:clamp(44px,8vh,58px);
+  width:clamp(160px,26vw,220px);
+  border:none;background:none;cursor:pointer;
+  border-radius:4px;overflow:hidden;
+  transition:transform .08s;
+}
+.btn-play:active{transform:scale(0.97)}
 
-    .logo-icon {
-      font-size: clamp(36px, 9vw, 58px);
-      filter: drop-shadow(0 0 10px rgba(240,165,0,0.8));
-    }
+.bp-bg{
+  position:absolute;inset:0;border-radius:4px;
+  background:linear-gradient(135deg,#ff7200 0%,#e03200 45%,#aa1c00 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,120,0,0.4),
+    0 3px 0 #6a0e00,
+    0 6px 25px rgba(255,60,0,0.45),
+    0 0 60px rgba(255,80,0,0.12),
+    inset 0 1px 0 rgba(255,180,80,0.3),
+    inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+.bp-shine{position:absolute;inset:0;border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,0.18) 0%,transparent 55%)}
+.bp-shimmer{
+  position:absolute;top:0;left:-100%;width:45%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent);
+  animation:shimmer 3.5s ease-in-out infinite;
+}
+@keyframes shimmer{0%{left:-100%}55%,100%{left:200%}}
 
-    .game-title {
-      font-size: clamp(26px, 7.5vw, 48px);
-      font-weight: 900;
-      color: var(--gold);
-      text-shadow:
-        0 0 20px rgba(240,165,0,0.8),
-        0 0 40px rgba(240,165,0,0.4),
-        var(--text-shadow);
-      letter-spacing: 2px;
-      text-align: center;
-      line-height: 1.1;
-    }
+.bp-content{
+  position:relative;z-index:2;
+  height:100%;display:flex;align-items:center;justify-content:center;
+  gap:clamp(8px,1.5vw,12px);
+  font-size:clamp(14px,2.5vw,20px);
+  font-weight:900;color:#fff;
+  letter-spacing:3px;
+  text-shadow:0 2px 8px rgba(0,0,0,0.5);
+}
+.bp-arrow{
+  width:clamp(22px,3.5vw,30px);height:clamp(22px,3.5vw,30px);
+  background:rgba(255,255,255,0.18);
+  border:1px solid rgba(255,255,255,0.35);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55em;padding-right:1px;
+}
 
-    .game-subtitle {
-      font-size: clamp(11px, 3vw, 16px);
-      font-weight: 600;
-      color: var(--sand);
-      text-shadow: var(--text-shadow);
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-top: 4px;
-      opacity: 0.85;
-    }
+/* Season tag */
+.season-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(200,40,0,0.2);
+  border:1px solid rgba(220,60,0,0.35);
+  border-radius:3px;
+  padding:3px 10px;
+  font-size:clamp(8px,1.3vw,10px);
+  font-weight:700;color:#ff7060;
+  letter-spacing:3px;
+  width:fit-content;
+  margin-top:clamp(4px,1vh,8px);
+}
+.season-dot{width:5px;height:5px;border-radius:50%;background:#ff3030;box-shadow:0 0 6px #ff3030;animation:sdot 1.2s ease-in-out infinite}
+@keyframes sdot{0%,100%{opacity:1}50%{opacity:.2}}
 
-    /* Season badge */
-    .season-badge {
-      margin-top: 10px;
-      background: linear-gradient(90deg, transparent, rgba(192,57,43,0.6), transparent);
-      border-top: 1px solid rgba(192,57,43,0.5);
-      border-bottom: 1px solid rgba(192,57,43,0.5);
-      padding: 3px 20px;
-      font-size: clamp(9px, 2.5vw, 12px);
-      font-weight: 700;
-      color: #ff8a7a;
-      letter-spacing: 3px;
-    }
+/* ─── BOTTOM NAV ─── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  height:clamp(64px,12vh,84px);
+  z-index:20;
+  display:flex;align-items:stretch;
+  padding:0 clamp(14px,3vw,28px) clamp(6px,1.5vh,12px);
+  gap:clamp(4px,1vw,8px);
+}
 
-    /* ===== CENTER AREA ===== */
-    .center-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-    }
+.nav-item{
+  flex:1;max-width:clamp(70px,12vw,100px);
+  position:relative;cursor:pointer;
+  border:none;background:none;
+  border-radius:6px;overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:3px;
+  transition:transform .1s;
+}
+.nav-item:active{transform:scale(0.94)}
 
-    /* Play button - main CTA */
-    .btn-play {
-      width: clamp(220px, 75%, 320px);
-      height: clamp(58px, 14vw, 72px);
-      background: linear-gradient(180deg, #ff8c00 0%, #e05500 50%, #b03500 100%);
-      border: none;
-      border-radius: 16px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      box-shadow:
-        0 6px 0 #7a2000,
-        0 8px 20px rgba(200,80,0,0.6),
-        0 0 40px rgba(255,140,0,0.3);
-      transition: transform 0.1s, box-shadow 0.1s;
-    }
+.nav-item.active .ni-bg{background:rgba(255,140,0,0.12);border-color:rgba(255,140,0,0.35)}
+.nav-item.active .ni-label{color:#ffa030}
+.nav-item.active .ni-bar{opacity:1}
 
-    .btn-play::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 50%);
-      border-radius: 16px;
-    }
+.ni-bg{
+  position:absolute;inset:0;border-radius:6px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  transition:background .2s,border-color .2s;
+}
+.nav-item:hover .ni-bg{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1)}
 
-    .btn-play:active {
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #7a2000, 0 4px 10px rgba(200,80,0,0.4);
-    }
+.ni-bar{
+  position:absolute;top:0;left:15%;right:15%;height:2px;
+  background:linear-gradient(90deg,transparent,#ff9020,transparent);
+  border-radius:0 0 2px 2px;
+  opacity:0;
+  transition:opacity .2s;
+}
 
-    .btn-play .btn-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-size: clamp(18px, 5vw, 26px);
-      font-weight: 900;
-      color: #fff;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-    }
+.ni-icon{position:relative;z-index:2;font-size:clamp(16px,3vw,22px);line-height:1}
+.ni-label{position:relative;z-index:2;font-size:clamp(8px,1.4vw,11px);font-weight:700;color:rgba(200,180,150,0.7);letter-spacing:1px;transition:color .2s}
 
-    .btn-play .btn-icon { font-size: 1.4em; }
+.ni-badge{
+  position:absolute;top:4px;right:calc(50% - 14px);
+  min-width:16px;height:16px;border-radius:8px;
+  background:#ff2a2a;border:1.5px solid #020308;
+  font-size:9px;font-weight:900;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 8px rgba(255,42,42,0.6);
+  z-index:3;
+  animation:badge 1.8s ease-in-out infinite;
+}
+@keyframes badge{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 
-    /* Shimmer animation on play button */
-    .btn-play::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 60%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-      animation: shimmer 3s ease-in-out infinite;
-    }
+/* spacer between left nav and right nav */
+.nav-spacer{flex:1}
 
-    @keyframes shimmer {
-      0%   { left: -100%; }
-      60%  { left: 150%; }
-      100% { left: 150%; }
-    }
+/* play button in nav center */
+.nav-play{
+  flex:0 0 clamp(100px,16vw,140px);
+  position:relative;cursor:pointer;
+  border:none;background:none;
+  border-radius:6px;overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:3px;
+  transition:transform .08s;
+}
+.nav-play:active{transform:scale(0.96)}
 
-    /* Grid of secondary buttons */
-    .btn-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      width: clamp(220px, 75%, 320px);
-      margin-top: 6px;
-    }
+.np-bg{
+  position:absolute;inset:0;border-radius:6px;
+  background:linear-gradient(135deg,#ff7000,#e02800,#a01800);
+  box-shadow:0 0 0 1px rgba(255,100,0,0.4),0 3px 0 #6a0e00,0 5px 20px rgba(255,60,0,0.4),inset 0 1px 0 rgba(255,180,80,0.25);
+}
+.np-shine{position:absolute;inset:0;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,0.15) 0%,transparent 50%)}
+.np-shimmer{
+  position:absolute;top:0;left:-100%;width:40%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
+  animation:shimmer 3s ease-in-out infinite;
+}
+.np-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.np-icon{font-size:clamp(18px,3vw,24px);line-height:1}
+.np-label{font-size:clamp(9px,1.5vw,12px);font-weight:900;color:#fff;letter-spacing:2px}
 
-    .btn-secondary {
-      height: clamp(56px, 13vw, 68px);
-      background: linear-gradient(180deg, #1e1408 0%, #120e06 100%);
-      border: 1.5px solid rgba(240,165,0,0.35);
-      border-radius: 14px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      box-shadow:
-        0 4px 0 #0a0804,
-        0 6px 16px rgba(0,0,0,0.5),
-        inset 0 1px 0 rgba(240,165,0,0.08);
-      transition: transform 0.1s, box-shadow 0.1s, border-color 0.2s;
-    }
+/* ─── MATCH INFO BAR ─── */
+.match-bar{
+  position:fixed;
+  top:clamp(44px,8vh,56px);left:clamp(18px,4vw,40px);
+  z-index:15;
+  display:flex;align-items:center;gap:clamp(8px,1.5vw,14px);
+  animation:fadeDown .8s .3s both;
+}
+.match-mode{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,0,0,0.5);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;
+  padding:4px 12px;
+  backdrop-filter:blur(6px);
+}
+.mm-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:sdot 2s ease-in-out infinite}
+.mm-text{font-size:clamp(8px,1.4vw,11px);font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:2px}
 
-    .btn-secondary::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%);
-      border-radius: 14px;
-    }
+.match-players{
+  display:flex;align-items:center;gap:5px;
+  font-size:clamp(8px,1.4vw,11px);
+  font-weight:700;
+  color:rgba(200,180,140,0.6);
+}
 
-    .btn-secondary:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #0a0804, 0 3px 8px rgba(0,0,0,0.4);
-    }
+/* ─── ANIMATIONS ─── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-    .btn-secondary:hover {
-      border-color: rgba(240,165,0,0.6);
-    }
+.left-panel{animation:fadeIn .9s both}
+.bottom-nav{animation:fadeUp .9s .2s both}
+.top-bar{animation:fadeDown .9s both}
 
-    /* Store button - accent color */
-    .btn-store {
-      border-color: rgba(255,140,0,0.45);
-    }
-    .btn-store .btn-s-icon { filter: drop-shadow(0 0 6px rgba(255,140,0,0.8)); }
-
-    /* Profile button */
-    .btn-profile {
-      border-color: rgba(100,180,255,0.35);
-    }
-    .btn-profile .btn-s-icon { filter: drop-shadow(0 0 6px rgba(100,180,255,0.7)); }
-
-    /* Settings button */
-    .btn-settings {
-      border-color: rgba(150,200,100,0.35);
-    }
-    .btn-settings .btn-s-icon { filter: drop-shadow(0 0 6px rgba(150,200,100,0.7)); }
-
-    .btn-s-icon {
-      font-size: clamp(22px, 6vw, 30px);
-    }
-
-    .btn-s-label {
-      font-size: clamp(11px, 3vw, 14px);
-      font-weight: 700;
-      color: var(--sand);
-      text-shadow: var(--text-shadow);
-      letter-spacing: 1px;
-    }
-
-    /* Notification dot */
-    .notif-dot {
-      position: absolute;
-      top: 8px;
-      left: 10px;
-      width: 10px;
-      height: 10px;
-      background: #ff3b30;
-      border-radius: 50%;
-      border: 2px solid #120e06;
-      box-shadow: 0 0 8px rgba(255,60,48,0.8);
-      animation: notifPulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes notifPulse {
-      0%, 100% { transform: scale(1); }
-      50%       { transform: scale(1.3); }
-    }
-
-    /* ===== BOTTOM BAR ===== */
-    .bottom-bar {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* Player info strip */
-    .player-strip {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(10,8,4,0.7);
-      border: 1px solid rgba(240,165,0,0.2);
-      border-radius: 50px;
-      padding: 6px 14px;
-      backdrop-filter: blur(6px);
-    }
-
-    .player-avatar {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #4a2a0a, #2a1208);
-      border: 2px solid var(--gold);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-
-    .player-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .player-name {
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .player-rank {
-      font-size: 10px;
-      color: var(--gold);
-      font-weight: 600;
-    }
-
-    .player-divider {
-      width: 1px;
-      height: 28px;
-      background: rgba(240,165,0,0.2);
-    }
-
-    .player-currency {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gold);
-    }
-
-    /* Connecting dots indicator */
-    .version-tag {
-      font-size: 10px;
-      color: rgba(255,255,255,0.3);
-      letter-spacing: 2px;
-      font-weight: 600;
-    }
-
-    /* ===== EDGE DECORATIONS ===== */
-    .edge-decor {
-      position: absolute;
-      z-index: 9;
-      pointer-events: none;
-    }
-
-    .corner-tl {
-      top: 0; left: 0;
-      width: 60px; height: 60px;
-      border-top: 2px solid rgba(240,165,0,0.4);
-      border-left: 2px solid rgba(240,165,0,0.4);
-      border-radius: 0 0 12px 0;
-    }
-
-    .corner-tr {
-      top: 0; right: 0;
-      width: 60px; height: 60px;
-      border-top: 2px solid rgba(240,165,0,0.4);
-      border-right: 2px solid rgba(240,165,0,0.4);
-      border-radius: 0 0 0 12px;
-    }
-
-    .corner-bl {
-      bottom: 0; left: 0;
-      width: 60px; height: 60px;
-      border-bottom: 2px solid rgba(240,165,0,0.4);
-      border-left: 2px solid rgba(240,165,0,0.4);
-      border-radius: 0 12px 0 0;
-    }
-
-    .corner-br {
-      bottom: 0; right: 0;
-      width: 60px; height: 60px;
-      border-bottom: 2px solid rgba(240,165,0,0.4);
-      border-right: 2px solid rgba(240,165,0,0.4);
-      border-radius: 12px 0 0 0;
-    }
-
-    /* Animated scanline effect (subtle) */
-    .scanline {
-      position: absolute;
-      inset: 0;
-      z-index: 6;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(0,0,0,0.04) 3px,
-        rgba(0,0,0,0.04) 4px
-      );
-      pointer-events: none;
-    }
-  </style>
+/* Ripple */
+@keyframes rpl{to{transform:scale(40);opacity:0}}
+</style>
 </head>
 <body>
-<div id="app">
 
-  <!-- Background layers -->
-  <div class="bg-sky"></div>
-  <div class="bg-sun"></div>
+<canvas id="bg"></canvas>
 
-  <div class="bg-haze">
-    <div class="haze-line"></div>
-    <div class="haze-line"></div>
-    <div class="haze-line"></div>
-    <div class="haze-line"></div>
-    <div class="haze-line"></div>
+<div class="ov-top"></div>
+<div class="ov-bot"></div>
+<div class="ov-left"></div>
+<div class="ov-vign"></div>
+<div class="scanline"></div>
+
+<!-- Character glow -->
+<div class="char-glow"></div>
+<div class="char-glow2"></div>
+
+<!-- Character silhouette -->
+<div class="char-zone">
+<svg class="char-svg" viewBox="0 0 340 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="cg" x1=".5" y1="0" x2=".5" y2="1">
+    <stop offset="0%" stop-color="#2c1c0a" stop-opacity=".95"/>
+    <stop offset="50%" stop-color="#160e04" stop-opacity=".98"/>
+    <stop offset="100%" stop-color="#050305" stop-opacity="1"/>
+  </linearGradient>
+  <linearGradient id="armorg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#241608"/>
+    <stop offset="100%" stop-color="#100a04"/>
+  </linearGradient>
+  <filter id="glow2"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="softglow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+
+<!-- Body aura -->
+<ellipse cx="170" cy="320" rx="80" ry="220" fill="rgba(255,70,0,0.04)" filter="url(#softglow)"/>
+
+<!-- ── LEGS ── -->
+<path d="M138 420 L122 560 L145 562 L162 460 L178 460 L195 562 L218 560 L202 420 Z" fill="url(#cg)"/>
+<!-- Boots -->
+<path d="M121 556 L116 590 L148 590 L146 556 Z" fill="#100a04"/>
+<path d="M194 556 L192 590 L224 590 L219 556 Z" fill="#100a04"/>
+<path d="M117 564 L113 584" stroke="rgba(255,120,0,0.3)" stroke-width="2"/>
+<path d="M219 564 L223 584" stroke="rgba(255,120,0,0.3)" stroke-width="2"/>
+<!-- Boot soles -->
+<path d="M113 588 L150 590 L150 594 L112 593 Z" fill="#0a0604"/>
+<path d="M192 590 L226 588 L227 593 L191 594 Z" fill="#0a0604"/>
+<!-- Knee pads -->
+<ellipse cx="132" cy="470" rx="12" ry="10" fill="#1a1006" stroke="rgba(255,140,0,0.2)" stroke-width="1" transform="rotate(-5 132 470)"/>
+<ellipse cx="208" cy="470" rx="12" ry="10" fill="#1a1006" stroke="rgba(255,140,0,0.2)" stroke-width="1" transform="rotate(5 208 470)"/>
+<!-- Leg armor lines -->
+<path d="M130 430 L128 500" stroke="rgba(255,100,0,0.12)" stroke-width="1.5"/>
+<path d="M210 430 L212 500" stroke="rgba(255,100,0,0.12)" stroke-width="1.5"/>
+
+<!-- ── TORSO ── -->
+<path d="M110 265 L100 420 L240 420 L230 265 Z" fill="url(#cg)"/>
+<!-- Chest plate -->
+<path d="M124 272 L140 267 L170 264 L200 267 L216 272 L220 340 L170 354 L120 340 Z" fill="url(#armorg)" stroke="rgba(255,130,0,0.22)" stroke-width="1.2"/>
+<!-- Chest center line -->
+<path d="M170 264 L170 354" stroke="rgba(255,140,0,0.18)" stroke-width="1"/>
+<!-- Chest straps -->
+<path d="M124 295 L216 295" stroke="rgba(255,140,0,0.12)" stroke-width="1"/>
+<path d="M120 320 L220 320" stroke="rgba(255,140,0,0.12)" stroke-width="1"/>
+<path d="M122 342 L218 342" stroke="rgba(255,140,0,0.1)" stroke-width="1"/>
+<!-- Armor panel detail -->
+<path d="M145 278 L170 274 L195 278 L192 310 L170 316 L148 310 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,160,0,0.15)" stroke-width=".8"/>
+<!-- Belt -->
+<path d="M104 378 L236 378 L234 394 L106 394 Z" fill="#130d04" stroke="rgba(255,140,0,0.28)" stroke-width="1"/>
+<rect x="162" y="376" width="16" height="20" rx="3" fill="#1c1206" stroke="rgba(255,190,0,0.5)" stroke-width="1.2"/>
+<!-- Belt pouches -->
+<rect x="118" y="380" width="18" height="12" rx="2" fill="#180e04" stroke="rgba(255,130,0,0.2)" stroke-width=".8"/>
+<rect x="204" y="380" width="18" height="12" rx="2" fill="#180e04" stroke="rgba(255,130,0,0.2)" stroke-width=".8"/>
+<!-- Tactical vest straps -->
+<path d="M140 267 L118 380" stroke="rgba(255,140,0,0.08)" stroke-width="2"/>
+<path d="M200 267 L222 380" stroke="rgba(255,140,0,0.08)" stroke-width="2"/>
+
+<!-- ── RIGHT ARM (raised, holding rifle) ── -->
+<path d="M228 268 L250 260 L275 200 L260 195 L232 258 L218 272 Z" fill="url(#cg)"/>
+<!-- Right hand -->
+<path d="M275 198 L268 184 L278 180 L285 196 Z" fill="#140e04"/>
+
+<!-- ── RIFLE ── -->
+<g filter="url(#glow2)" transform="translate(240,140) rotate(-30)">
+  <!-- Stock -->
+  <path d="M-8 14 L52 10 L54 22 L-6 26 Z" fill="#1c1208" stroke="rgba(180,140,60,0.25)" stroke-width=".8"/>
+  <!-- Receiver body -->
+  <path d="M50 6 L128 4 L130 24 L48 26 Z" fill="#161010" stroke="rgba(255,255,255,0.08)" stroke-width=".8"/>
+  <!-- Barrel -->
+  <path d="M126 10 L185 7 L185 17 L126 20 Z" fill="#101010"/>
+  <!-- Barrel end -->
+  <path d="M184 8 L194 8 L195 18 L184 18 Z" fill="#0c0c0c" stroke="rgba(255,255,255,0.1)" stroke-width=".8"/>
+  <!-- Flash suppressor -->
+  <path d="M193 6 L200 8 L200 18 L193 20 Z" fill="#141414" stroke="rgba(255,255,255,0.06)" stroke-width=".5"/>
+  <!-- Scope -->
+  <rect x="76" y="-2" width="32" height="11" rx="3" fill="#181212" stroke="rgba(255,255,255,0.08)" stroke-width=".8"/>
+  <rect x="80" y="0" width="24" height="7" rx="2" fill="rgba(40,80,120,0.4)"/>
+  <!-- Scope glint -->
+  <path d="M82 2 L85 5" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+  <!-- Magazine -->
+  <path d="M66 22 L88 22 L90 44 L64 44 Z" fill="#141010" stroke="rgba(255,255,255,0.06)" stroke-width=".8"/>
+  <!-- Foregrip -->
+  <rect x="104" y="22" width="8" height="22" rx="2" fill="#181414"/>
+  <!-- Rail detail -->
+  <path d="M52 8 L128 6" stroke="rgba(255,255,255,0.06)" stroke-width=".8"/>
+  <path d="M52 20 L128 22" stroke="rgba(255,255,255,0.04)" stroke-width=".8"/>
+  <!-- Charging handle -->
+  <rect x="114" y="3" width="4" height="5" rx="1" fill="#201a10" stroke="rgba(255,200,80,0.2)" stroke-width=".6"/>
+  <!-- Muzzle glow -->
+  <circle cx="200" cy="13" r="5" fill="rgba(255,180,50,0.08)"/>
+</g>
+
+<!-- ── LEFT ARM (down, holding pistol) ── -->
+<path d="M112 268 L88 274 L72 350 L78 368 L100 362 L118 278 Z" fill="url(#cg)"/>
+<!-- Tactical glove hint -->
+<path d="M73 348 L66 366 L80 372 L88 354 Z" fill="#100c04"/>
+<!-- Pistol -->
+<g filter="url(#glow2)" transform="translate(58,350) rotate(15)">
+  <path d="M0 5 L32 3 L33 15 L0 17 Z" fill="#141010" stroke="rgba(255,255,255,0.07)" stroke-width=".7"/>
+  <path d="M31 7 L50 5 L50 13 L31 15 Z" fill="#101010"/>
+  <path d="M4 15 L20 15 L22 28 L2 28 Z" fill="#181414"/>
+</g>
+
+<!-- ── NECK ── -->
+<rect x="157" y="222" width="26" height="48" rx="6" fill="#1e1408"/>
+<!-- Neck armor -->
+<path d="M155 238 L185 238 L183 252 L157 252 Z" fill="#1a1006" stroke="rgba(255,140,0,0.15)" stroke-width=".8"/>
+
+<!-- ── HEAD / HELMET ── -->
+<!-- Helmet body -->
+<path d="M130 188 Q128 148 170 142 Q212 148 210 188 L207 228 L133 228 Z" fill="#1c1408"/>
+<!-- Helmet top dome -->
+<path d="M133 192 Q131 155 170 149 Q209 155 207 192" fill="#181006" stroke="rgba(255,140,0,0.18)" stroke-width="1"/>
+<!-- Helmet top ridge -->
+<path d="M155 144 L170 140 L185 144 L183 158 L170 154 L157 158 Z" fill="#221808" stroke="rgba(255,150,0,0.2)" stroke-width=".8"/>
+<!-- Helmet center line -->
+<path d="M170 142 L170 192" stroke="rgba(255,140,0,0.15)" stroke-width=".8"/>
+<!-- Helmet side panels -->
+<path d="M130 190 L128 222" stroke="rgba(255,140,0,0.12)" stroke-width="1.5"/>
+<path d="M210 190 L212 222" stroke="rgba(255,140,0,0.12)" stroke-width="1.5"/>
+
+<!-- Visor -->
+<path d="M136 205 L204 205 L201 224 L139 224 Z" fill="#060e1a" stroke="rgba(60,160,255,0.35)" stroke-width="1.2"/>
+<!-- Visor inner glow line -->
+<path d="M140 212 L200 212" stroke="rgba(80,200,255,0.5)" stroke-width="1.5" filter="url(#glow2)"/>
+<!-- Visor reflection -->
+<path d="M140 207 L165 207 L163 212 L138 212 Z" fill="rgba(255,255,255,0.03)"/>
+<!-- Visor HUD dots -->
+<circle cx="148" cy="215" r="1.5" fill="rgba(80,255,180,0.7)"/>
+<circle cx="192" cy="215" r="1.5" fill="rgba(80,255,180,0.7)"/>
+<path d="M153 215 L187 215" stroke="rgba(80,255,180,0.2)" stroke-width=".8"/>
+
+<!-- Night vision mount -->
+<rect x="156" y="198" width="28" height="10" rx="3" fill="#181206" stroke="rgba(255,200,60,0.2)" stroke-width=".8"/>
+<circle cx="163" cy="203" r="4" fill="#100c04" stroke="rgba(100,200,100,0.3)" stroke-width=".8"/>
+<circle cx="177" cy="203" r="4" fill="#100c04" stroke="rgba(100,200,100,0.3)" stroke-width=".8"/>
+
+<!-- Helmet straps -->
+<path d="M134 224 L138 240" stroke="rgba(180,140,80,0.2)" stroke-width="1.2"/>
+<path d="M206 224 L202 240" stroke="rgba(180,140,80,0.2)" stroke-width="1.2"/>
+<path d="M137 240 L203 240 L201 246 L139 246 Z" fill="rgba(180,140,80,0.1)" stroke="rgba(180,140,80,0.15)" stroke-width=".8"/>
+
+<!-- Comm device on helmet -->
+<rect x="206" y="172" width="12" height="8" rx="2" fill="#141006" stroke="rgba(255,140,0,0.2)" stroke-width=".8"/>
+<path d="M218 176 L228 172" stroke="rgba(255,140,0,0.3)" stroke-width=".8"/>
+
+<!-- ── SHOULDER PADS ── -->
+<path d="M108 268 Q95 262 88 278 Q88 296 108 290 L118 278 Z" fill="url(#armorg)" stroke="rgba(255,140,0,0.22)" stroke-width="1"/>
+<path d="M232 268 Q245 262 252 278 Q252 296 232 290 L222 278 Z" fill="url(#armorg)" stroke="rgba(255,140,0,0.22)" stroke-width="1"/>
+<!-- Shoulder pad detail -->
+<path d="M95 272 Q92 282 95 288" stroke="rgba(255,140,0,0.2)" stroke-width="1"/>
+<path d="M245 272 Q248 282 245 288" stroke="rgba(255,140,0,0.2)" stroke-width="1"/>
+
+<!-- ── BACKPACK / TACTICAL GEAR ── -->
+<path d="M118 268 L118 380 L108 380 L106 268 Z" fill="#140e04" stroke="rgba(255,130,0,0.1)" stroke-width=".8"/>
+<path d="M222 268 L234 268 L232 380 L222 380 Z" fill="#140e04" stroke="rgba(255,130,0,0.1)" stroke-width=".8"/>
+
+<!-- ── EDGE HIGHLIGHTS (subtle rim light) ── -->
+<path d="M170 142 Q212 148 210 188 L232 268 L252 260 L275 200 L232 268 L240 420 L218 560"
+      stroke="rgba(255,90,0,0.12)" stroke-width="1.5" fill="none"/>
+<path d="M170 142 Q128 148 130 188 L108 268 L88 274 L72 350 L88 274 L100 420 L122 560"
+      stroke="rgba(255,90,0,0.12)" stroke-width="1.5" fill="none"/>
+</svg>
+</div>
+
+<!-- Lens flares -->
+<div class="flare flare1"></div>
+<div class="flare flare2"></div>
+<div class="flare flare3"></div>
+
+<!-- HUD corners -->
+<div class="hud"></div>
+<div class="hud2"></div>
+
+<!-- ══════════ TOP BAR ══════════ -->
+<div class="top-bar">
+  <!-- Logo -->
+  <div class="logo-mark">
+    <div class="logo-icon-wrap">⚔️</div>
+    <div class="logo-text">DESERT STORM</div>
   </div>
 
-  <!-- Desert dunes SVG -->
-  <svg class="bg-dunes" viewBox="0 0 400 180" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
-    <!-- Far dune shadow -->
-    <ellipse cx="200" cy="170" rx="240" ry="40" fill="rgba(0,0,0,0.4)"/>
-    <!-- Back dunes -->
-    <path d="M-20 180 Q40 110 120 130 Q180 110 240 120 Q300 105 360 125 Q400 115 430 130 L430 180 Z"
-          fill="#3d2208" opacity="0.9"/>
-    <!-- Mid dunes -->
-    <path d="M-20 180 Q20 145 80 155 Q130 140 190 148 Q250 138 310 150 Q360 140 430 155 L430 180 Z"
-          fill="#5a3010"/>
-    <!-- Front dunes -->
-    <path d="M-20 180 Q30 158 100 165 Q160 155 220 162 Q280 153 340 162 Q390 155 430 165 L430 180 Z"
-          fill="#7a4518"/>
-    <!-- Foreground sand -->
-    <path d="M-20 180 Q60 168 150 173 Q230 165 320 172 Q380 167 430 172 L430 180 Z"
-          fill="#9a5a22"/>
-    <!-- Sand ripples -->
-    <path d="M10 177 Q50 174 90 176" stroke="rgba(220,160,60,0.3)" stroke-width="1" fill="none"/>
-    <path d="M120 175 Q170 172 220 174" stroke="rgba(220,160,60,0.3)" stroke-width="1" fill="none"/>
-    <path d="M250 176 Q300 173 350 175" stroke="rgba(220,160,60,0.3)" stroke-width="1" fill="none"/>
-  </svg>
+  <div class="tb-divider"></div>
 
-  <!-- Dust particles -->
-  <div class="particles" id="particles"></div>
-
-  <!-- Vignette -->
-  <div class="vignette"></div>
-
-  <!-- Scanlines -->
-  <div class="scanline"></div>
-
-  <!-- Corner decorations -->
-  <div class="edge-decor corner-tl"></div>
-  <div class="edge-decor corner-tr"></div>
-  <div class="edge-decor corner-bl"></div>
-  <div class="edge-decor corner-br"></div>
-
-  <!-- Main content -->
-  <div class="content">
-
-    <!-- Header / Logo -->
-    <div class="header">
-      <div class="logo-badge">
-        <span class="logo-icon">⚔️</span>
-      </div>
-      <div class="game-title">القتال في الصحراء</div>
-      <div class="game-subtitle">Desert Warriors</div>
-      <div class="season-badge">◆ الموسم الثالث ◆</div>
+  <!-- Player pill -->
+  <div class="player-pill">
+    <div class="pa">🪖</div>
+    <div>
+      <div class="pname">المحارب الأسود</div>
+      <div class="plvl">✦ ماسي I</div>
     </div>
+  </div>
 
-    <!-- Center: main buttons -->
-    <div class="center-area">
+  <div class="tb-divider"></div>
 
-      <!-- Play button -->
-      <button class="btn-play" onclick="ripple(this, event)">
-        <div class="btn-content">
-          <span class="btn-icon">▶</span>
-          ابدأ اللعبة
-        </div>
-      </button>
+  <!-- Currency -->
+  <div class="currency-strip">
+    <div class="cur gold"><span class="cur-icon">💰</span>12,840<div class="cur-add">+</div></div>
+    <div class="cur gems"><span class="cur-icon">💎</span>340<div class="cur-add">+</div></div>
+    <div class="cur cash"><span class="cur-icon">🎟</span>8<div class="cur-add">+</div></div>
+  </div>
 
-      <!-- 2×2 grid -->
-      <div class="btn-grid">
+  <div class="tb-divider"></div>
+  <div class="top-settings">⚙️</div>
+</div>
 
-        <button class="btn-secondary btn-store" onclick="ripple(this, event)">
-          <div class="notif-dot"></div>
-          <span class="btn-s-icon">🏪</span>
-          <span class="btn-s-label">المتجر</span>
-        </button>
+<!-- Match info bar -->
+<div class="match-bar">
+  <div class="match-mode">
+    <div class="mm-dot"></div>
+    <span class="mm-text">BATTLE ROYALE</span>
+  </div>
+  <div class="match-players">👥 89,420 لاعب الآن</div>
+</div>
 
-        <button class="btn-secondary btn-profile" onclick="ripple(this, event)">
-          <span class="btn-s-icon">👤</span>
-          <span class="btn-s-label">الملف الشخصي</span>
-        </button>
+<!-- ══════════ LEFT PANEL ══════════ -->
+<div class="left-panel">
+  <div class="eyebrow"><div class="eyebrow-line"></div>DESERT STORM<div class="eyebrow-line"></div></div>
+  <div class="title-en">BATTLE EDITION</div>
+  <div class="title-ar" data-t="عاصفة الصحراء">عاصفة الصحراء</div>
+  <div class="title-sep"></div>
+  <div class="tagline">اخترنا المعركة — الصحراء تنتظر المحاربين الأقوياء</div>
+  <div class="season-tag"><div class="season-dot"></div>الموسم الثالث · حدث مؤقت</div>
 
-        <button class="btn-secondary btn-settings" onclick="ripple(this, event)" style="grid-column: 1 / -1; width: 100%;">
-          <span class="btn-s-icon">⚙️</span>
-          <span class="btn-s-label">الإعدادات</span>
-        </button>
-
+  <div class="btn-play-wrap">
+    <button class="btn-play" onclick="doRipple(this,event)">
+      <div class="bp-bg"></div>
+      <div class="bp-shine"></div>
+      <div class="bp-shimmer"></div>
+      <div class="bp-content">
+        <div class="bp-arrow">▶</div>
+        ابدأ اللعبة
       </div>
-    </div>
-
-    <!-- Bottom player info -->
-    <div class="bottom-bar">
-      <div class="player-strip">
-        <div class="player-avatar">🪖</div>
-        <div class="player-info">
-          <span class="player-name">المحارب الأسود</span>
-          <span class="player-rank">★ المستوى ٤٧</span>
-        </div>
-        <div class="player-divider"></div>
-        <div class="player-currency">
-          💰 <span>12,840</span>
-        </div>
-      </div>
-      <div class="version-tag">v2.3.1 · جميع الحقوق محفوظة</div>
-    </div>
-
+    </button>
   </div>
 </div>
 
+<!-- ══════════ BOTTOM NAV ══════════ -->
+<div class="bottom-nav">
+
+  <button class="nav-item" onclick="setActive(this,event)">
+    <div class="ni-bg"></div><div class="ni-bar"></div>
+    <span class="ni-icon">🏆</span>
+    <span class="ni-label">البطولات</span>
+  </button>
+
+  <button class="nav-item" onclick="setActive(this,event)">
+    <div class="ni-bg"></div><div class="ni-bar"></div>
+    <div class="ni-badge">5</div>
+    <span class="ni-icon">🎁</span>
+    <span class="ni-label">الأحداث</span>
+  </button>
+
+  <div class="nav-spacer"></div>
+
+  <!-- Center play -->
+  <button class="nav-play active" onclick="doRipple(this,event)">
+    <div class="np-bg"></div>
+    <div class="np-shine"></div>
+    <div class="np-shimmer"></div>
+    <div class="np-content">
+      <div class="np-icon">▶</div>
+      <div class="np-label">العب الآن</div>
+    </div>
+  </button>
+
+  <div class="nav-spacer"></div>
+
+  <button class="nav-item" onclick="setActive(this,event)">
+    <div class="ni-bg"></div><div class="ni-bar"></div>
+    <div class="ni-badge">3</div>
+    <span class="ni-icon">🏪</span>
+    <span class="ni-label">المتجر</span>
+  </button>
+
+  <button class="nav-item" onclick="setActive(this,event)">
+    <div class="ni-bg"></div><div class="ni-bar"></div>
+    <span class="ni-icon">👤</span>
+    <span class="ni-label">الملف</span>
+  </button>
+
+</div>
+
 <script>
-  // Generate dust particles
-  const container = document.getElementById('particles');
-  for (let i = 0; i < 28; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const size = Math.random() * 4 + 1;
-    p.style.cssText = `
-      width: ${size}px;
-      height: ${size}px;
-      left: ${Math.random() * 100}%;
-      bottom: ${Math.random() * 35}%;
-      animation-duration: ${Math.random() * 8 + 6}s;
-      animation-delay: ${Math.random() * 8}s;
-      opacity: ${Math.random() * 0.5 + 0.1};
-    `;
-    container.appendChild(p);
+/* ══════════════════════════
+   CANVAS ENGINE
+══════════════════════════ */
+const cv = document.getElementById('bg');
+const cx = cv.getContext('2d');
+let W, H;
+function rsz(){ W=cv.width=window.innerWidth; H=cv.height=window.innerHeight }
+rsz(); window.addEventListener('resize',rsz);
+
+/* Stars */
+const stars = Array.from({length:160},()=>({
+  x:Math.random(), y:Math.random()*0.6,
+  r:Math.random()*1.1+0.2,
+  a:Math.random()*0.7+0.2,
+  sp:Math.random()*.003+.001,
+  ph:Math.random()*Math.PI*2
+}));
+
+/* Embers */
+class Ember{
+  constructor(){ this.reset(true) }
+  reset(init=false){
+    this.x=(0.3+Math.random()*.5)*W;
+    this.y=init?Math.random()*H:H*(0.6+Math.random()*.25);
+    this.vx=(Math.random()-.5)*.6;
+    this.vy=-(Math.random()*1.4+.5);
+    this.life=1; this.dec=Math.random()*.009+.004;
+    this.r=Math.random()*2.2+.4;
+    this.spark=Math.random()<.3;
+    this.hue=15+Math.random()*35;
   }
-
-  // Ripple effect on button tap
-  function ripple(btn, e) {
-    const existing = btn.querySelector('.ripple-el');
-    if (existing) existing.remove();
-
-    const rect = btn.getBoundingClientRect();
-    const x = (e.clientX || rect.left + rect.width / 2) - rect.left;
-    const y = (e.clientY || rect.top + rect.height / 2) - rect.top;
-
-    const el = document.createElement('span');
-    el.className = 'ripple-el';
-    el.style.cssText = `
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.25);
-      width: 8px; height: 8px;
-      left: ${x - 4}px; top: ${y - 4}px;
-      transform: scale(0);
-      animation: rippleAnim 0.5s ease-out forwards;
-      pointer-events: none;
-    `;
-    btn.appendChild(el);
-
-    if (!document.querySelector('#ripple-style')) {
-      const s = document.createElement('style');
-      s.id = 'ripple-style';
-      s.textContent = `@keyframes rippleAnim { to { transform: scale(30); opacity: 0; } }`;
-      document.head.appendChild(s);
+  tick(){
+    this.x+=this.vx+Math.sin(Date.now()*.0012+this.y*.01)*.35;
+    this.y+=this.vy; this.vy*=.999;
+    this.life-=this.dec;
+    if(this.life<=0) this.reset();
+  }
+  draw(){
+    cx.save(); cx.globalAlpha=this.life*.9;
+    if(this.spark){
+      cx.strokeStyle=`hsl(${this.hue},100%,75%)`;
+      cx.lineWidth=this.r*.5;
+      cx.shadowColor=`hsl(${this.hue},100%,65%)`; cx.shadowBlur=7;
+      cx.beginPath(); cx.moveTo(this.x,this.y);
+      cx.lineTo(this.x-this.vx*6,this.y-this.vy*6); cx.stroke();
+    } else {
+      const g=cx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*2.5);
+      g.addColorStop(0,`hsla(${this.hue+20},100%,92%,1)`);
+      g.addColorStop(.4,`hsla(${this.hue},100%,62%,.8)`);
+      g.addColorStop(1,`hsla(${this.hue-10},100%,40%,0)`);
+      cx.fillStyle=g; cx.shadowColor=`hsl(${this.hue},100%,60%)`; cx.shadowBlur=14;
+      cx.beginPath(); cx.arc(this.x,this.y,this.r*2.5,0,Math.PI*2); cx.fill();
     }
+    cx.restore();
   }
+}
+const embers=Array.from({length:70},()=>new Ember());
+
+/* Smoke wisps */
+const wisps=Array.from({length:10},()=>({
+  x:Math.random(), y:.55+Math.random()*.25,
+  w:.12+Math.random()*.2, a:Math.random()*.05+.015,
+  sp:(Math.random()*.00015+.00008)*(Math.random()<.5?1:-1),
+  ph:Math.random()*Math.PI*2
+}));
+
+function drawSky(){
+  const g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#02030c'); g.addColorStop(.2,'#07050e');
+  g.addColorStop(.38,'#110806'); g.addColorStop(.52,'#261408');
+  g.addColorStop(.62,'#4e1e06'); g.addColorStop(.70,'#8a300a');
+  g.addColorStop(.76,'#c84c0e'); g.addColorStop(.82,'#de6214');
+  g.addColorStop(.88,'#b04010'); g.addColorStop(1,'#040208');
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+}
+
+function drawHorizon(){
+  const y=H*.8;
+  let g=cx.createRadialGradient(W*.6,y,0,W*.6,y,W*.55);
+  g.addColorStop(0,'rgba(255,110,20,.24)'); g.addColorStop(.4,'rgba(255,60,0,.1)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  g=cx.createRadialGradient(W*.6,H*.76,0,W*.6,H*.76,W*.15);
+  g.addColorStop(0,'rgba(255,220,80,.22)'); g.addColorStop(.35,'rgba(255,140,0,.1)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+}
+
+function drawStars(t){
+  cx.save();
+  stars.forEach(s=>{
+    const a=.3+.5*Math.sin(t*s.sp*1000+s.ph);
+    cx.beginPath(); cx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);
+    cx.fillStyle=`rgba(255,240,200,${a*s.a*.85})`;
+    cx.shadowColor='rgba(255,230,180,.4)'; cx.shadowBlur=4;
+    cx.fill();
+  });
+  cx.restore();
+}
+
+function drawDunes(){
+  const sets=[
+    {pts:[[0,.62],[.1,.55],[.22,.59],[.35,.52],[.48,.57],[.6,.50],[.72,.55],[.85,.49],[1,.54],[1,1],[0,1]],col:'#0e0804'},
+    {pts:[[0,.70],[.08,.64],[.20,.68],[.34,.61],[.50,.67],[.63,.59],[.76,.65],[.90,.58],[1,.64],[1,1],[0,1]],col:'#170e06'},
+    {pts:[[0,.79],[.10,.73],[.24,.77],[.40,.70],[.56,.76],[.68,.69],[.82,.75],[.94,.68],[1,.74],[1,1],[0,1]],col:'#201408'},
+    {pts:[[0,.87],[.12,.82],[.28,.86],[.44,.79],[.60,.85],[.74,.78],[.88,.84],[1,.80],[1,1],[0,1]],col:'#2a1a0a'},
+    {pts:[[0,.93],[.18,.89],[.38,.93],[.58,.87],[.76,.92],[.92,.87],[1,.91],[1,1],[0,1]],col:'#341e0c'},
+  ];
+  sets.forEach(({pts,col})=>{
+    cx.beginPath(); pts.forEach(([x,y],i)=>i?cx.lineTo(x*W,y*H):cx.moveTo(x*W,y*H));
+    cx.fillStyle=col; cx.fill();
+  });
+  // Sand ripples
+  cx.strokeStyle='rgba(200,140,50,.1)'; cx.lineWidth=1;
+  [[.05,.91,.20,.89],[.28,.92,.45,.90],[.55,.88,.72,.90],[.78,.91,.94,.89]].forEach(([x1,y1,x2,y2])=>{
+    cx.beginPath(); cx.moveTo(x1*W,y1*H); cx.bezierCurveTo(x1*W+20,y1*H-4,x2*W-20,y2*H-4,x2*W,y2*H); cx.stroke();
+  });
+}
+
+function drawWisps(t){
+  wisps.forEach(w=>{
+    const cx_=((w.x+t*w.sp)%1.4-.2)*W;
+    const cy_=(w.y+Math.sin(t*.25+w.ph)*.015)*H;
+    const g=cx.createRadialGradient(cx_,cy_,0,cx_,cy_,w.w*W*.5);
+    g.addColorStop(0,`rgba(190,110,35,${w.a})`); g.addColorStop(1,'rgba(0,0,0,0)');
+    cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  });
+}
+
+/* Volumetric light shaft */
+function drawLightShaft(t){
+  cx.save();
+  const x=W*.62, y=H*.78;
+  const a=.04+.02*Math.sin(t*.5);
+  cx.globalAlpha=a;
+  const g=cx.createConicalGradient?null:null;
+  // Simple fan rays
+  for(let i=0;i<5;i++){
+    const angle=-Math.PI*.5+(-0.18+i*.1);
+    const len=H*.7;
+    const spread=35+i*12;
+    cx.beginPath();
+    cx.moveTo(x,y);
+    cx.lineTo(x+Math.cos(angle-spread*.008)*len, y+Math.sin(angle-spread*.008)*len);
+    cx.lineTo(x+Math.cos(angle+spread*.008)*len, y+Math.sin(angle+spread*.008)*len);
+    cx.closePath();
+    const grad=cx.createLinearGradient(x,y,x,y+len);
+    grad.addColorStop(0,'rgba(255,160,40,.12)');
+    grad.addColorStop(1,'rgba(255,160,40,0)');
+    cx.fillStyle=grad;
+    cx.fill();
+  }
+  cx.restore();
+}
+
+function loop(ts){
+  const t=ts/1000;
+  cx.clearRect(0,0,W,H);
+  drawSky(); drawHorizon(); drawStars(t);
+  drawLightShaft(t); drawDunes(); drawWisps(t);
+  embers.forEach(e=>{e.tick();e.draw()});
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ── Ripple ── */
+function doRipple(btn,e){
+  const old=btn.querySelector('.rpl'); if(old)old.remove();
+  const r=btn.getBoundingClientRect();
+  const x=(e.clientX??r.left+r.width/2)-r.left;
+  const y=(e.clientY??r.top+r.height/2)-r.top;
+  const el=document.createElement('span');
+  el.className='rpl';
+  el.style.cssText=`position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.2);width:10px;height:10px;left:${x-5}px;top:${y-5}px;transform:scale(0);animation:rpl .6s ease-out forwards;z-index:99;`;
+  btn.appendChild(el);
+}
+
+/* ── Nav active ── */
+function setActive(el,e){
+  doRipple(el,e);
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+}
 </script>
 </body>
 </html>
